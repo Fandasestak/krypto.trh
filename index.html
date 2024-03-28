@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kryptoměny</title>
+  <style>
+    /* CSS kódy zůstávají stejné */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: navy;
+    }
+
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+
+    .search {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .search input[type="text"] {
+      padding: 10px;
+      width: 60%;
+      border:none;
+      border-radius: 8px;
+      outline-color: navy;
+    }
+
+    .search button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 1s;
+    }
+
+    .search button:hover {
+      background-color: #0056b3;
+    }
+
+    .filters {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .filters label {
+      font-weight: bold;
+    }
+
+    .crypto-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      padding: 20px;
+      margin: 20px;
+    }
+
+    .crypto-card {
+      border: 1px solid navy;
+      margin: 20px;
+      border-radius: 8px;
+      grid-column: 20px;
+      background-color: #fff;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+      transition: 555ms ease;
+      text-align: center;
+    }
+
+    .crypto-card:hover {
+      transform: translateY(-5px);
+      border: 2px solid black
+    }
+
+    .crypto-card img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+
+    .crypto-card h2 {
+      color: #333;
+      margin: 0;
+    }
+
+    .crypto-card p {
+      margin: 5px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Kryptoměnový Trh</h1>
+    <div class="search">
+      <input type="text" id="searchInput" placeholder="Vyhledat kryptoměnu...">
+      <button onclick="search()">Hledat</button>
+    </div>
+    <div class="filters">
+      <label for="sortBy">Řadit podle:</label>
+      <select id="sortBy" onchange="filter()">
+        <option value="price" class="cena">Cena</option>
+        <option value="marketCap">Tržní kapitalizace</option>
+        <option value="volume">Objem obchodů</option>
+      </select>
+    </div>
+    <div class="crypto-list" id="cryptoList">
+      <!-- Dynamicky generovaný obsah z JS -->
+    </div>
+  </div>
+
+  <script>
+    // Simulace dat
+    const cryptocurrencies = [
+      ,{ image: 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/46/Bitcoin.svg/1200px-Bitcoin.svg.png', name: 'Bitcoin', price: "70k", marketCap: "70mld", volume: "350mil" },
+      ,{ image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAAnFBMVEX///9iaI+KkrJFSnVgZo54f6FWXIOBiq1TWoaHj7BeZIxVXIeEjK5CR3P8/P1ZX4lmbJKOlrX09Peepb/s7fLm5+y8vs1PVHw8QnAzOWvY2eL19vixtMWnqr57gKDIytaRla/d3uVudJeHi6jFydiqrcCZoLy1uc2ChqQtNGiiqMLR1OCanrVTWH9+gZw2PGxna4x1f6Y/SHugorUQeEpUAAAJhklEQVR4nO2de1viOhDGN6VcWgqlKIrgiuIFET3uOfv9v9uhXHqdJJMinUkf3n/3Wc3PJG8myWT669dFF1100UUXXXTRj2tC3YBzazwaUzfhzPpYPlM34byaBe3ejLoRZ5XjtP0RdSPOqZvAabvhPXUzzqfr7rYPXTdsrtlceTGh8BtrNrNtF8aEorFm4zgHQrehZrO1mQOhaKbZxDZzJBS9a+rmnEGxzSSETTSb2b4LD4Sit6Fu0I/LcXKEzTObvc2khCJ8pW7Sz+pgMxnCppnNwWayhM0ym03ShSlhs8wm6cEsoSuom/VzWoGEDTKb68ABCUW/KWbz5kkI/Xfqpv2MMjZTIBT9RpjN0HGkhM2IbLI2UyQU4W/q5p2u666iDxsR2bx5SkL7zWYTOEpC0VtQN/E0DQs9WCYUlkc2Kz2h3WZTtBmwD602m6LNgIQ2m03JZkBC0bfWbIYAIEQofOqWVlXZZiSEtprNpGwzEkLRs/N2H7AZGaH/QN3YKoJsRkZopdmUoxkVoRBD6gYbC7QZOWH4l7rBpoJtRtGH1pkNbDMKQtvMZiPrQimhZWYjsxkVoXBtMhuZzSgJbTIbqc0oCW0yG6nNqAlda8xmAUczWkJrzAbcNKEIhW+H2dwrxqiGMPykbjxGKpvREdphNpESUEPotqmbr5fSZrSEFpjNXAOoI+RvNq9Km0EQcjcbjc0gCLmbjSqaQRLyNpsX3SxEEIr+DTWGXFqbQREKf04NIpXWZpCEbM3mSWszOELRe6JGkUgTzeAJuZoNwmaQhEzNZo4Zo0hCEXI0m98Im0ET+o/UOGWhbAZNyNFsUDaDJ3SX1EBF4WwGTyhCZmaDiWbMCAWzN3xImzEh5GU2WJsxIeRlNlibMSLkZDZomzEiZGQ2yGjGmJDPg2G8zZgRsjEbA5txnKg9whNyeTBsYDPR++jr1sUz8jAbtM1E0cPIFZ3BoOWjGTk8GB6jx2hbuNs52Gm1WoNWZ4SE7NGbzQfKZiJn6e4tJiaMGb9wiPRmg7KZKFj6xybvCWPIL4GBJDcbDN/7KLNCJIRbxlvEhKR+VnOjs5m9vWSUIcQx0pqN3mb29iIj3JuOphNDykx3tc1EXtstRTAFQgQj5YPhmbILg2WZDyDcDVYlIuEbPlX/dVP71BJqJiSd2UhtpmQvWkI1I5XZjKU+WrIXBKFqQrp9msjmCrQZ0F4y6ksJt4wDCSON2YA2E3mgvaD6cN+PcDRHUp0A4gtGsL2gCXcTEojmKMymbDMKezEhhE2n/uoE5Xd3KnsxIwRNp/Y3fHmb0dmLKSFgOnWbTc5m4s0R+nwJSRgzfuW2yTWbTaYH85ujnyNsFU3HrRNwldgMzl4qEuZNp06zydZEws6/aoQ506mxFMoxt2spDPEqEGYY63swvHt3lz17OS9hKznTqas6wdDcXk4ljCekO6qt7tLKM7aX0wn3plPPg+FJt11h+p1OuJuQYR3Jpy+9SvPvBwhbrem6livF8XOfqA/X/9S1E96MwvrnYev7ts647T6sOlSrEk6nNR/WjB971bqxGuFg/Vz/Uc1sGdZGeOfTZJ7cVBmqFQinA7KkjPmn+VA1JhysHymf0Ty1++clHNz9oX5h8hKaTUczwumAwUuvodlQNSGc3jF53j0xGap4wsF6SXNzCP3WhYseqmhCOISpY1LOrwDG4W9sPI4knK6hU5nJQy3r/tO/K8C+r59x0xF3IgzG2PPP/2pKzLjpetAAwsXjGMLvDkRyE/Zqq5j15nXfoAlx39cPVT3h9BuKsZ+Wfb++LLdx4HjdV+BZy/hRu3XUEQ7uniU/uNakjLj8jBe8AP+ijcc1hHcCirF3m7VerdHpLs0kiKDW3PjKoaoknE4hitlugtd8NXMof9z9gCxPuXVUEG43gdAAPZh03QV6Dhl7Xhf6o6vicTnh3R9oSLweFtr6M/iOlzOBAzu7bDrKCOEBuhgdfg5FacXkYXoXDHL+SlxVkjF09wkMwsnDcbyTpEOnF1BeAAU5kwdwqIJZX+AmcPtHOnqWS1OBP1PjwwODnIUAhipA+N2CNoEvfvq/qV7NZjMTAzDI+V0OckqE8CYwZ1Zk2YnzbLaC1wXj8ffiylHML10/AAOwcABEV4Ign+TtBdBg24xCBSG8CSwc4lGmeq/yaUOSeDy3dcwSwpvAbeCX/7oAaYmFKJ+9J4vHM2Oukxmg0CawdJhO/G6mlBqljccTQngTWL4Qoa5XU34TJInHjy3vHEMYaBO4EaVNNH15BSDLVBKP74Oczn6AQjH29Xs5RmBQsB16xa2Kxzu7EAboZvgwi0P5CDCTVhKPb8OUzgC+aFn4UKzO47tecLFSOB7/7N2uwRgb3m9xKfwFP7GEg5zJM2CNsjss6jdPiWQlzDwHN8ak95B8XuS/yN7OwPF4Xk/Ss6s+gwekR8EPE6RDNSPFoQ6r+teKwh9wkHOU6gyZzWv8neT1u1VDdbNU3ANw+0ySslRb9xXqDvVdDv0D4KIUgPF0LA/VV+UlB8MPXGqqXgZRPshZjNSn/3wWilS6J8HdjzTImTxobnB4fsBTV9kzicczx4SyMcqiWkRJ8veIyVD14qG60Oan0D5uVki1ZByH6tUMPijOT0LVEkoqTAUJRIY/v4Ui0VAPiKnAw/lDF4gqGXpC8koYSq20bqMl5P6JsujUet5MF4pUwDcdjQjZLhSpdEWVdHX1yY9H9ZLuhjGEDI5H9ZqfQigYHI/qpV4ylIS8F4pUyiVDRch9oUilWjJUX0PivlCkUi0Ziq+S0SRcVJP0AFVFaMNCkUq+ZEgJKctBVZD8AFVOaMVCkUpaJEv6DUtLFopUsgNU2XdImdyjmUhS1hQmtGihSCU5QIUJqRMuqgneZYCEnO7RTAQeoILfVrdhRwEJPEAFv61u2UKRCjpABQh5JFxUE7BklAltXCgSAQeoJUI2CRfVVF4ySoQc79FMVLpzKxJyqNh9mopLRoGQVcJFNRVLDRcIeSVcVNMmUBByS7iopvydW46Q8T2aiYZSQoYJF9WUO0DNEtq+UKTKHqBmCHkmXFRT5gA1JfSZfuWwkq6DMqEF92gmSnfDCSHfhItqSpaMI2FDFopU8yIh54SLajouGQdC+45H9TosGXtCe+7RTBSlhFYej+q1XzJiwoYtFKl2d24xoV33aCaKd8NbQsvu0Uw03hO61h6P6jXrbgmbuFCkWnntkEkNtnMpajdzoUg1EVbeo5moMdv6iy666KKLLrqIk/4HejC4vBI77h4AAAAASUVORK5CYII=', name: 'Ethereum', price: "5k", marketCap: "35mld", volume: "20mld" },
+      ,{ image: 'data:image/jpeg;base64,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', name: 'Ripple', price: "$ 0.613489", marketCap: "70mld", volume: "5mld" }
+      ,{ image: 'https://upload.wikimedia.org/wikipedia/en/d/d0/Dogecoin_Logo.png',name: 'Dodge coin', price: "4.282262", marketCap:"8,5mld", volume: "45mil" },
+      ,{ image: 'https://cdn.pixabay.com/photo/2021/04/30/16/47/bnb-6219388_1280.png', price: "583.76", name: 'BNB', marketCap: "7,3mil", volume: "200mil" },
+      ,{ image: 'https://upload.wikimedia.org/wikipedia/en/5/53/Shiba_Inu_coin_logo.png', price: "0.00003", name: 'Shiba Inu', marketCap: "100mil", volume: "500mil" }
+      ,{ image: 'https://upload.wikimedia.org/wikipedia/commons/5/58/Bitcoin_Cash.png', price: "489.76", name: 'Bitcoin Cash', marketCap:"700k", volume: "11mil" }
+      ,{ image: 'https://upload.wikimedia.org/wikipedia/commons/e/e7/Dai_Logo.png', price: " 1.000008", name: 'Dai', marketCap: "11k", volume: "43,5k" }
+      ,{ image: 'https://cryptologos.cc/logos/kaspa-kas-logo.png', price: "3,11", name: 'Kaspa', marketCap: "245,5k", volume: "530,23k" }
+      ,{ image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQnlVAWiNMtCr7I0hnfvR-XKLfjGtAP0sTVCzTQaEuUT_XiewhOvTPl_IaKaCQpdN9icTo&usqp=CAU', price: "25", name: 'Pepe', marketCap: "10k", volume: "50k" }
+      ,{ image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTtMX_grxNiSDZdLFr3BNdx931IhLzH0t_I6PJ0lLUDig&s', price: "3,328.82", name: 'Maker', marketCap: "23,5mil", volume: "12,5mld" }
+      ,{ image: 'https://static-00.iconduck.com/assets.00/tron-cryptocurrency-icon-2048x2048-1ihzjf1w.png', price: "0.121059", name: 'Tron', marketCap: "120k", volume: "340mil"}
+      // Přidejte další kryptoměny zde
+    ];
+
+    // Funkce pro vykreslení seznamu kryptoměn
+    function renderCryptocurrencies(cryptocurrencies) {
+      const cryptoList = document.getElementById('cryptoList');
+      cryptoList.innerHTML = '';
+      cryptocurrencies.forEach(crypto => {
+        const cryptoCard = document.createElement('div');
+        cryptoCard.classList.add('crypto-card');
+        cryptoCard.innerHTML = `
+          <img src="${crypto.image}" alt="${crypto.name}">
+          <h2>${crypto.name}</h2>
+          <p>Cena: $${crypto.price}</p>
+          <p>Tržní kapitalizace: $${crypto.marketCap}</p>
+          <p>Objem obchodů: $${crypto.volume}</p>
+        `;
+        cryptoList.appendChild(cryptoCard);
+      });
+    }
+
+    // Načtení výchozího seznamu kryptoměn při načtení stránky
+    window.onload = function() {
+      renderCryptocurrencies(cryptocurrencies);
+    };
+
+    // Funkce pro vyhledávání kryptoměn
+    function search() {
+      const searchInput = document.getElementById('searchInput').value.toLowerCase();
+      const filteredCryptocurrencies = cryptocurrencies.filter(crypto => crypto.name.toLowerCase().includes(searchInput));
+      renderCryptocurrencies(filteredCryptocurrencies);
+    }
+
+    // Funkce pro řazení kryptoměn
+    function filter() {
+      const sortBy = document.getElementById('sortBy').value;
+      let sortedCryptocurrencies = [...cryptocurrencies];
+      switch (sortBy) {
+        case 'price':
+          sortedCryptocurrencies.sort((a, b) => a.price - b.price);
+          break;
+        case 'marketCap':
+          sortedCryptocurrencies.sort((a, b) => a.marketCap - b.marketCap);
+          break;
+        case 'volume':
+          sortedCryptocurrencies.sort((a, b) => a.volume - b.volume);
+          break;
+      }
+      renderCryptocurrencies(sortedCryptocurrencies);
+    }
+  </script>
+</body>
+</html>
+
+
